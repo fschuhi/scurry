@@ -21,7 +21,7 @@ requirements.txt
 #.gitattributes
 
 ### --- AppleScript ---
-# nothing yet, to be added
+macros/MailExporter/export_mail.applescript
 
 ### --- Tools ---
 # tools/concat_files.py
