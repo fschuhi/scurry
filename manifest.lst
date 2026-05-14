@@ -1,0 +1,60 @@
+(This file is the basis of the `filesdump.txt` in which it is included, i.e. the document you are reading right now.
+The files in this manifest are the relevant files for understanding how the project hangs together.
+Files which are commented out are not included in the `filesdump.txt`.)
+
+### --- Context & Meta ---
+# ⚠️ NON-NEGOTIABLE collaboration rules - READ FIRST
+CRITICAL_RULES.md
+
+LLM-instructions.md
+manifest.lst
+tmp/project-tree.txt
+
+README.md
+TODO.md
+# CHANGELOG.md
+
+# Historical design notes from the sidebar build-out. Not actively maintained.
+# SIDEBAR_DESIGN.md
+
+### --- Build & Configuration ---
+Anima/Anima/Info.plist
+Makefile
+pyproject.toml
+tools/requirements.txt
+#.editorconfig
+.gitignore
+#.gitattributes
+#.pre-commit-config.yaml
+
+### --- Swift ---
+Anima/Anima/AnimaPDFView.swift
+Anima/Anima/AnnotationManager.swift
+Anima/Anima/AppDelegate.swift
+Anima/Anima/CommentCardView.swift
+Anima/Anima/CommentInputPanel.swift
+Anima/Anima/FitzBridge.swift
+Anima/Anima/MainViewController.swift
+Anima/Anima/SidebarExtractor.swift
+
+### --- Tools ---
+tools/anima_helper.py
+# tools/concat_files.py
+
+### --- Testing Swift---
+#Anima/AnimaTests/Fixtures/sidebar_basic.pdf
+Anima/AnimaTests/Fixtures/sidebar_basic_expected.json
+#Anima/AnimaTests/Fixtures/sidebar_page_extract.pdf
+Anima/AnimaTests/Fixtures/sidebar_page_extracted.json
+Anima/AnimaTests/AnimaTests.swift
+
+### --- Testing Python tools ---
+tests/conftest.py
+tests/test_anima_helper.py
+
+# stubs
+# Anima/AnimaUITests/AnimaUITests.swift
+# Anima/AnimaUITests/AnimaUITestsLaunchTests.swift
+
+### --- Data ---
+# data/input_original.pdf

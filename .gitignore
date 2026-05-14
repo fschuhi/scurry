@@ -1,0 +1,31 @@
+# Debug logs
+*.log
+
+# Editor (PyCharm / VSCode / Vim)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python virtual environment & cache
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# AppleScript compiled output (from osacompile via Makefile)
+build/
+*.scpt
+*.app
+
+# Temporary files (LLM Context generation)
+tmp/
+*.tmp
+filesdump.txt
+project-tree.txt
