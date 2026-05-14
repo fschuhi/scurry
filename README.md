@@ -102,8 +102,13 @@ scurry/
 ├── TODO.md                          ← Task list and milestones
 ├── first-prompt.md                  ← Entry point for new LLM sessions
 ├── manifest.lst                     ← File list for filesdump generation
-└── Makefile                         ← Build and utility targets
+├── Makefile                         ← Build and utility targets
+└── requirements.txt                 ← Python requirements, for 
 ```
+
+In case you don't find some of the mentioned folders then treat this as todo/proposal.
+
+Please also refer to the `gentree` output in the `filesdump.txt`.
 
 ---
 

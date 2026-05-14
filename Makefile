@@ -20,9 +20,9 @@ all: setup
 $(VENV_ACTIVATE):
 	python3 -m venv $(VENV_DIR)
 
-$(SETUP_STAMP): $(VENV_ACTIVATE) tools/requirements.txt
+$(SETUP_STAMP): $(VENV_ACTIVATE) requirements.txt
 	@echo "--- Installing Python dependencies ---"
-	$(PIP) install -r tools/requirements.txt
+	$(PIP) install -r requirements.txt
 	@echo "--- Setup complete ---"
 	@touch $(SETUP_STAMP)
 
