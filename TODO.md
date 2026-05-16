@@ -30,11 +30,14 @@
 
 **Goal:** Implement the directionality logic and the abbreviation dictionary for the folder suffix.
 
-- [ ] Define the hardcoded list of "own email addresses" (used to determine if an email is incoming or outgoing).
-- [ ] Define the abbreviation dictionary (e.g., `foo.bar@bla.com` -> `FB`).
+**Implementation approach:** A Python helper script called from AppleScript via `do shell script`. This keeps the AppleScript lean and avoids its awkward string handling and encoding limitations (Mac Roman, no proper dictionaries, no dynamic key lookup). The helper receives sender and recipient addresses as arguments and returns the formatted suffix. The abbreviation mapping and own-address list live in a configuration file (format TBD: JSON or simple text) managed outside the AppleScript.
+
+- [ ] Create the Python helper script for abbreviation lookup and suffix generation.
+- [ ] Define the configuration file format and location for the abbreviation dictionary and own-address list.
 - [ ] Implement Outgoing logic: build the `(to AB, CD)` suffix (max 3 recipients, drop unknowns).
 - [ ] Implement Incoming logic: build the `(AB)` suffix (drop the word 'to').
-- [ ] Integrate the calculated suffix into the folder creation step from Milestone 1.
+- [ ] Integrate the `do shell script` call into `export_mail.applescript` to invoke the helper.
+- [ ] Integrate the returned suffix into the folder creation step from Milestone 1.
 
 ---
 
@@ -42,10 +45,14 @@
 
 **Goal:** Make the macro accessible friction-free without opening the Script Editor.
 
-- [ ] Set up Automator Quick Action wrapping `osascript` execution of the compiled `.scpt`.
-- [ ] Assign a global keyboard shortcut via System Settings → Keyboard → Keyboard Shortcuts → Services.
-- [ ] Test the trigger inside Apple Mail.
-- [ ] Write `docs/macOS_integration.md` detailing exactly how to set up, activate, and deactivate the macro for future reference.
+**Status: COMPLETE (2026-05-16)**
+
+- [x] Bound CapsLock+D via Karabiner Elements `shell_command` to run `osascript .../export_mail.scpt`.
+- [x] Scoped the shortcut to Apple Mail only via `condition_bundle_ids` (`^com\.apple\.mail$`).
+- [x] Granted Accessibility permission on first run; works silently thereafter.
+- [x] Karabiner was chosen over Automator Quick Action, Shortcuts, and Keyboard Maestro — it leverages an existing setup already managing 90+ key mappings.
+
+**Note:** The Karabiner rule lives in the Karabiner rules spreadsheet (`rules.xlsx`), not in the scurry repo. Run `make build` after any AppleScript changes to ensure the compiled `.scpt` is current before using the shortcut.
 
 ---
 

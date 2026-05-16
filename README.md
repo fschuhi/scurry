@@ -50,7 +50,7 @@ graph TB
 
 The primary macro extracts selected emails from Apple Mail into a structured local directory within the staging folder.
 
-**Status:** Milestone 1 complete. Core extraction is fully functional. Directionality suffixes (Milestone 2) are not yet implemented.
+**Status:** Milestones 1 and 3 complete. Core extraction is fully functional and accessible via keyboard shortcut. Directionality suffixes (Milestone 2) are not yet implemented.
 
 ### 1. Folder Naming Convention
 
@@ -58,8 +58,8 @@ The script analyzes the selected email and formats the folder name as: `YYMMDD v
 
 * **Timestamp:** Formatted as `YYMMDD vHHMM` (e.g., `2026-05-09 15:33` becomes `260509 v1533`). Date formatting is performed via `do shell script` using the Unix `date` command to avoid locale-dependent AppleScript date handling. The intermediate conversion uses ISO 8601 format via `«class isot»`.
 * **Reserved Characters:** Characters invalid in macOS/Windows paths (`: / \ * ? " < > |`) are stripped from the subject. Multiple spaces are collapsed and leading/trailing whitespace is trimmed. Sanitization is performed via a `sed` pipeline in the shell.
-* **Directionality Suffix (Milestone 2):** The script will use a hardcoded list of the user's "own email addresses" to determine if the email is incoming or outgoing.
-    * **Outgoing (Sent):** Appends `(to AB, CD)` based on a hardcoded abbreviation dictionary. Maximum of 3 recipients. Unknown recipients are dropped.
+* **Directionality Suffix (Milestone 2):** A Python helper script (called from AppleScript via `do shell script`) will use configuration data to determine if the email is incoming or outgoing, and generate the appropriate suffix.
+    * **Outgoing (Sent):** Appends `(to AB, CD)` based on an abbreviation dictionary. Maximum of 3 recipients. Unknown recipients are dropped.
     * **Incoming (Inbox):** Appends `(AB)`. The word "to" is omitted.
 
 **Current examples (Milestone 1):**
@@ -119,8 +119,6 @@ scurry/
 │       └── export_mail.scpt
 ├── tools/
 │   └── concat_files.py              ← Filesdump generator for LLM sessions
-├── docs/                            ← Guides and reference (to be populated in Milestone 3)
-│   └── macOS_integration.md         ← How to bind scripts to keyboard shortcuts (planned)
 ├── tmp/                             ← Staging folder for exported emails (gitignored)
 ├── CHANGELOG.md                     ← Release history
 ├── CRITICAL_RULES.md                ← Non-negotiable LLM collaboration rules
@@ -137,6 +135,22 @@ scurry/
 
 ## Integration & Usage
 
+### Daily Use: Keyboard Shortcut (CapsLock+D)
+
+The primary way to use the Mail Exporter is via a Karabiner Elements keyboard shortcut:
+
+1. Select an email in Apple Mail
+2. Press **CapsLock+D** (D for "download")
+3. The export runs silently and shows a confirmation dialog with the folder name and attachment count
+
+**Prerequisites:**
+- The compiled `.scpt` must be current: run `make build` after any changes to the AppleScript source
+- Accessibility permission must have been granted on first run
+
+**How it works:** A Karabiner Elements `shell_command` rule calls `osascript` on the compiled `.scpt`. The rule is scoped to Apple Mail only via `condition_bundle_ids` (`^com\.apple\.mail$`), so it won't fire in other apps. The rule lives in the Karabiner rules spreadsheet (`rules.xlsx`), managed by the `converter.py` tool — it is not part of the scurry repo.
+
+**Note on Karabiner Elements:** Scurry uses the same Karabiner CapsLock-as-Hyper-key layer that drives 90+ other key mappings (cursor navigation, bracket shortcuts, clip-tools, etc.). This is a proven, reliable mechanism for per-app keyboard shortcuts on macOS. If you've forgotten about this setup, check `rules.xlsx` and `converter.py` in the Karabiner project.
+
 ### Running from Script Editor (Development)
 
 Open `macros/MailExporter/export_mail.applescript` in Script Editor, select an email in Apple Mail, and press ▶️ Run. Use Enter/Return to dismiss the confirmation dialog (the OK button may not respond to mouse clicks — this is a known Script Editor quirk).
@@ -150,16 +164,13 @@ make build
 osascript build/MailExporter/export_mail.scpt
 ```
 
-### Running via Keyboard Shortcut (Milestone 3)
-
-The plan is to use an **Automator Quick Action** wrapping `osascript` execution, with a keyboard shortcut assigned via System Settings → Keyboard → Keyboard Shortcuts → Services. This will allow triggering the export while Apple Mail is the active window. Details will be documented in `docs/macOS_integration.md`.
-
 ---
 
 ## Technical Notes & Gotchas
 
 * **HFS vs. POSIX Paths:** AppleScript natively uses colon-separated HFS paths (`Macintosh HD:Users:name:Desktop:`). Interacting with the Unix shell or standard file systems requires explicit coercion to POSIX paths (`/Users/name/Desktop/`). The `save` command for attachments requires `POSIX file` coercion. Scurry scripts clearly document path coercions to prevent runtime errors.
 * **AppleScript Date Parsing:** AppleScript's native date handling is localized and fragile. Scurry converts dates to ISO 8601 via `«class isot»` (a four-character OSType code) and then reformats via `do shell script "date ..."` to ensure consistent output regardless of macOS system region settings.
+* **AppleScript File Encoding:** Script Editor saves `.applescript` files in Mac Roman encoding (not UTF-8). Characters like em dashes and the `« »` chevrons in four-character codes are not valid UTF-8. The filesdump generator (`tools/concat_files.py`) handles this with a UTF-8 → Mac Roman fallback. Keep this in mind when processing AppleScript files with other tools.
 * **Shell Argument Safety:** All user-controlled data (email subjects, body text) is passed to `do shell script` using `quoted form of` to prevent shell injection. The email.txt heredoc uses single-quoted delimiters (`<<'SCURRY_EOF'`) to prevent variable interpolation.
 * **Sender Normalization:** The `sender` property in Apple Mail returns raw RFC 2822 format, which may be `"Name <email>"` or just `"email"`. The script extracts the bare email address by parsing angle brackets when present.
-* **Display Dialog Quirk:** In Script Editor, `display dialog` buttons may not respond to mouse clicks. This is a known macOS/Script Editor issue. Use Enter/Return to dismiss (the default button is always set). This is a development-only issue — it will not affect Automator Quick Action execution.
+* **Display Dialog Quirk:** In Script Editor, `display dialog` buttons may not respond to mouse clicks. This is a known macOS/Script Editor issue. Use Enter/Return to dismiss (the default button is always set). This is a development-only issue — it does not affect Karabiner-triggered execution.

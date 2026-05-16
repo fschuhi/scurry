@@ -4,6 +4,28 @@ All notable changes to the Scurry project will be documented in this file.
 
 ---
 
+## [0.2.0] — 2026-05-16
+
+### Milestone 3: macOS Integration — COMPLETE
+
+Keyboard shortcut integration via Karabiner Elements, plus a tooling bugfix discovered during the session.
+
+**Implemented:**
+- Bound CapsLock+D to run the compiled `export_mail.scpt` via Karabiner Elements `shell_command`
+- Scoped the shortcut to Apple Mail only (`^com\.apple\.mail$` via `condition_bundle_ids`)
+- Granted Accessibility permission on first run; subsequent invocations require no user interaction
+
+**Integration decision:**
+- Chose Karabiner Elements over Automator Quick Action, Shortcuts, or Keyboard Maestro. The Karabiner approach leverages an existing, proven setup (CapsLock-as-Hyper key layer) already in use for clip-tools and 90+ other key mappings. Per-app scoping via `condition_bundle_ids` avoids accidental triggers. No additional software required.
+
+**Tooling bugfix: `tools/concat_files.py`**
+- Fixed silent omission of `export_mail.applescript` from the filesdump, caused by two independent bugs:
+  1. **Encoding mismatch:** Script Editor saves `.applescript` files in Mac Roman encoding (ISO-8859). The script's `read_text(encoding='utf-8')` raised `UnicodeDecodeError` on characters like em dashes and `«class isot»` chevrons. Fix: new `read_text_with_fallback()` function tries UTF-8 first, then falls back to `mac_roman`.
+  2. **Curly brace collision:** AppleScript's empty list literal `{}` was interpreted as a Python `str.format()` positional placeholder, causing `IndexError`. Fix: replaced `FILE_TEMPLATE.format(...)` with direct string concatenation using f-strings for the XML tags only.
+- The error handler now writes diagnostics to stderr (previously swallowed silently)
+
+---
+
 ## [0.1.0] — 2026-05-15
 
 ### Milestone 1: Core Extraction Engine — COMPLETE
