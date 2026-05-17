@@ -12,17 +12,7 @@
 
 **Goal:** Extract an email and save it to the staging area with a basic name. Defer complex abbreviation and routing logic.
 
-**Status: COMPLETE (2026-05-15)**
-
-- [x] Setup `macros/MailExporter/export_mail.applescript`.
-- [x] Read the currently selected message(s) in Apple Mail.
-- [x] Extract metadata: sender, recipients (To/Cc/Bcc), subject, and datetime.
-- [x] Extract the plain text body (stripped of HTML and rich formatting).
-- [x] Sanitize the subject (strip reserved path characters like `:`, `/`, etc.).
-- [x] Format the datetime as `YYMMDD vHHMM`.
-- [x] Create a local save directory in the hardcoded staging path (`YYMMDD vHHMM Sanitized_Subject`).
-- [x] Format and save `email.txt` (must include metadata headers, the plain text body, and a list of attached filenames at the bottom).
-- [x] Download and save the actual attachments into the newly created folder.
+**Status: COMPLETE (2026-05-15)**, see `CHANGELOG.md`
 
 ---
 
