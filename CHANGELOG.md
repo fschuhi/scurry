@@ -4,6 +4,38 @@ All notable changes to the Scurry project will be documented in this file.
 
 ---
 
+## [0.3.0] — 2026-05-18
+
+### Milestone 2: Routing & Naming Polish — COMPLETE
+
+Directionality suffixes for exported email folders, powered by a Python helper script.
+
+**Implemented:**
+- Created `suffix_helper.py` — determines email direction (incoming vs outgoing) and generates folder name suffixes like `(to JD, FB)` or `(BH)`
+- Abbreviation dictionary via semicolon-delimited CSV (`data/MailExporter/contacts.csv`) with comment and blank line support
+- Own-address list via plain text file (`data/MailExporter/own_addresses.txt`) for directionality detection
+- Case-insensitive matching on all email address lookups
+- Outgoing: up to 3 To recipient abbreviations, unknowns silently dropped, duplicates removed, order preserved
+- Incoming: single sender abbreviation, or no suffix if unknown
+- Integrated into `export_mail.applescript` (v8) via `do shell script` call
+- Refactored `stagingRoot` to derive from new `projectRoot` variable (single source of truth)
+- Example config files tracked in git (`contacts.example.csv`, `own_addresses.example.txt`)
+
+**Test suite:**
+- 13 new pytest tests in `tests/MailExporter/test_suffix_helper.py`
+- Covers: incoming/outgoing logic, case insensitivity, cap at 3, deduplication, order preservation, unknown handling, file loading, CLI integration
+- Test fixtures in `tests/fixtures/MailExporter/`
+- Mirrored test directory structure (`tests/MailExporter/`) to match `macros/MailExporter/`, preparing for multi-tool growth
+
+**Design decisions:**
+- Python helper over AppleScript-native: avoids AppleScript's lack of dictionaries, awkward string handling, and Mac Roman encoding constraints
+- CSV over JSON/TOML for config: extensible (future columns for namespaces, on/off toggles), comfortable for Excel round-tripping (semicolon-delimited for German locale)
+- Separate own-addresses file: directionality detection and abbreviation lookup are independent concerns
+- CLI argument interface (no central config TOML): keeps things simple; AppleScript passes paths directly
+- Only To recipients considered (not Cc/Bcc)
+
+---
+
 ## [0.2.0] — 2026-05-16
 
 ### Milestone 3: macOS Integration — COMPLETE

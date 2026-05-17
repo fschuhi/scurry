@@ -18,7 +18,7 @@ TODO.md
 Makefile
 requirements.txt
 .gitignore
-#.gitattributes
+# .gitattributes
 
 ### --- AppleScript ---
 macros/MailExporter/export_mail.applescript
@@ -27,11 +27,12 @@ macros/MailExporter/export_mail.applescript
 # tools/concat_files.py
 
 ### --- Testing AppleScript ---
-# TBD
+# N/A
 
 ### --- Testing Python tools ---
 tests/fixtures/MailExporter/contacts.csv
 tests/fixtures/MailExporter/own_addresses.txt
+tests/MailExporter/test_suffix_helper.py
 
 ### --- Data ---
 data/MailExporter/contacts.example.csv

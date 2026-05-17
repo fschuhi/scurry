@@ -8,45 +8,13 @@
 
 ---
 
-## Milestone 1: The Core Extraction Engine (Apple Mail)
+## Backlog
 
-**Goal:** Extract an email and save it to the staging area with a basic name. Defer complex abbreviation and routing logic.
+### Karabiner Elements Integration
+- [ ] Merge the Karabiner Elements json↔xlsx converter project into Scurry as the 2nd tool in the ecosystem. The project converts between KE JSON config and an Excel spreadsheet for easier rule management. Currently a standalone Python project not in GitHub — a natural fit for Scurry since many macros will be triggered via Karabiner shortcuts.
 
-**Status: COMPLETE (2026-05-15)**, see `CHANGELOG.md`
-
----
-
-## Milestone 2: Routing & Naming Polish
-
-**Goal:** Implement the directionality logic and the abbreviation dictionary for the folder suffix.
-
-**Implementation approach:** A Python helper script called from AppleScript via `do shell script`. This keeps the AppleScript lean and avoids its awkward string handling and encoding limitations (Mac Roman, no proper dictionaries, no dynamic key lookup). The helper receives sender and recipient addresses as arguments and returns the formatted suffix. The abbreviation mapping and own-address list live in a configuration file (format TBD: JSON or simple text) managed outside the AppleScript.
-
-- [ ] Create the Python helper script for abbreviation lookup and suffix generation.
-- [ ] Define the configuration file format and location for the abbreviation dictionary and own-address list.
-- [ ] Implement Outgoing logic: build the `(to AB, CD)` suffix (max 3 recipients, drop unknowns).
-- [ ] Implement Incoming logic: build the `(AB)` suffix (drop the word 'to').
-- [ ] Integrate the `do shell script` call into `export_mail.applescript` to invoke the helper.
-- [ ] Integrate the returned suffix into the folder creation step from Milestone 1.
-
----
-
-## Milestone 3: macOS Integration
-
-**Goal:** Make the macro accessible friction-free without opening the Script Editor.
-
-**Status: COMPLETE (2026-05-16)**
-
-- [x] Bound CapsLock+D via Karabiner Elements `shell_command` to run `osascript .../export_mail.scpt`.
-- [x] Scoped the shortcut to Apple Mail only via `condition_bundle_ids` (`^com\.apple\.mail$`).
-- [x] Granted Accessibility permission on first run; works silently thereafter.
-- [x] Karabiner was chosen over Automator Quick Action, Shortcuts, and Keyboard Maestro — it leverages an existing setup already managing 90+ key mappings.
-
-**Note:** The Karabiner rule lives in the Karabiner rules spreadsheet (`rules.xlsx`), not in the scurry repo. Run `make build` after any AppleScript changes to ensure the compiled `.scpt` is current before using the shortcut.
-
----
-
-## Milestone 4: Nice to Have (Backlog)
+### Backup Strategy for Gitignored Files
+- [ ] Determine a macOS backup strategy for files that are gitignored but contain important data (e.g. `data/MailExporter/contacts.csv`, `own_addresses.txt`). This is a cross-project concern — many projects have similar gitignored-but-critical files. On Windows, SyncBackSE handled this; need a macOS equivalent.
 
 ### Inline Pictures
 - [ ] Consider renaming inline/pasted images (currently saved as `image001.png` etc.) to a sequential scheme like `pic1.png`, `pic2.png` for clarity. (Note: inline images are already saved by the attachment loop — this is cosmetic.)
