@@ -1,0 +1,7 @@
+address;abbreviation
+john.doe@gmail.com;JD
+foo.bar@yahoo.de;FB
+# ignore, and ignore following empty line
+
+bla.heul@seier.nl;BH
+reier-seier@blubber.de;RS

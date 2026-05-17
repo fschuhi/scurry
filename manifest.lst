@@ -30,7 +30,9 @@ macros/MailExporter/export_mail.applescript
 # TBD
 
 ### --- Testing Python tools ---
-# TBD
+tests/fixtures/MailExporter/contacts.csv
+tests/fixtures/MailExporter/own_addresses.txt
 
 ### --- Data ---
-# TBD
+data/MailExporter/contacts.example.csv
+data/MailExporter/own_addresses.example.txt

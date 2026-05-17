@@ -29,3 +29,7 @@ tmp/
 *.tmp
 filesdump.txt
 project-tree.txt
+
+# private configuration files
+data/**/contacts.csv
+data/**/own_addresses.txt
