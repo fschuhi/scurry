@@ -24,7 +24,8 @@ build/
 *.scpt
 *.app
 
-# Temporary files (LLM Context generation)
+# Temporary files
+bak/
 tmp/
 *.tmp
 filesdump.txt
@@ -33,3 +34,4 @@ project-tree.txt
 # private configuration files
 data/**/contacts.csv
 data/**/own_addresses.txt
+data/**/rules.xlsx
