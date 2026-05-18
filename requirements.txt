@@ -1,3 +1,6 @@
 # Dev tools
 black>=24.0
 pytest>=8.0
+
+# KarabinerConverter
+openpyxl>=3.1

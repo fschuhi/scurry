@@ -1,0 +1,228 @@
+{
+  "title": "Capsmove Custom Rules",
+  "rules": [
+    {
+      "description": "Karabiner Rules",
+      "manipulators": [
+        {
+          "description": "CapsLock -> Hyper (Right Control)",
+          "type": "basic",
+          "from": {
+            "key_code": "caps_lock"
+          },
+          "to": [
+            {
+              "key_code": "right_control"
+            }
+          ]
+        },
+        {
+          "description": "F1 -> F2 (wg Excel)",
+          "type": "basic",
+          "from": {
+            "key_code": "f1"
+          },
+          "to": [
+            {
+              "key_code": "f2"
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_if",
+              "bundle_identifiers": [
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "description": "CapsLock + C -> Ctrl + C (Parallels)",
+          "type": "basic",
+          "from": {
+            "key_code": "c",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "c",
+              "modifiers": [
+                "left_control"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_if",
+              "bundle_identifiers": [
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "description": "CapsLock + C -> Cmd + C (macOS)",
+          "type": "basic",
+          "from": {
+            "key_code": "c",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "c",
+              "modifiers": [
+                "left_command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "description": "CapsLock + LCmd + J -> Word Left (Parallels)",
+          "type": "basic",
+          "from": {
+            "key_code": "j",
+            "modifiers": {
+              "mandatory": [
+                "right_control",
+                "left_command"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "left_arrow",
+              "modifiers": [
+                "left_control"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_if",
+              "bundle_identifiers": [
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "description": "fn10 -> Ctrl + F2 (focus menu bar)",
+          "type": "basic",
+          "from": {
+            "key_code": "f10"
+          },
+          "to": [
+            {
+              "key_code": "f2",
+              "modifiers": [
+                "left_control"
+              ]
+            }
+          ]
+        },
+        {
+          "description": "CapsLock + P -> Right Click",
+          "type": "basic",
+          "from": {
+            "key_code": "p",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "pointing_button": "button2"
+            }
+          ]
+        },
+        {
+          "description": "Test shell command",
+          "type": "basic",
+          "from": {
+            "key_code": "f19",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "echo test"
+            }
+          ]
+        },
+        {
+          "description": "Multi-key output example",
+          "type": "basic",
+          "from": {
+            "key_code": "f20",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "a"
+            },
+            {
+              "key_code": "b"
+            },
+            {
+              "key_code": "c"
+            }
+          ]
+        },
+        {
+          "description": "Terminal or iTerm rule",
+          "type": "basic",
+          "from": {
+            "key_code": "tab",
+            "modifiers": {
+              "mandatory": [
+                "right_control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "tab",
+              "modifiers": [
+                "left_control"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_if",
+              "bundle_identifiers": [
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
