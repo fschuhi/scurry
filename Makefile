@@ -9,8 +9,15 @@ ACTIVATE = . $(VENV_ACTIVATE)
 PIP = $(ACTIVATE) && pip
 SETUP_STAMP = $(VENV_DIR)/.setup_stamp
 
+# KarabinerConverter paths
+KE_SCRIPT    = scripts/KarabinerConverter/karabiner_converter.py
+KE_DATA      = data/KarabinerConverter
+KE_BUILD     = build/KarabinerConverter
+KE_DEPLOY    = $(HOME)/.config/karabiner/assets/complex_modifications
+
 # --- Phony targets ---
 .PHONY: all setup build run clean format showtree gentree filesdump help test test-verbose
+.PHONY: karabiner-export karabiner-import karabiner-deploy
 
 # Default target
 all: setup
@@ -54,6 +61,26 @@ build: ## Compile plain-text AppleScripts to runnable .scpt files
 
 clean-build: ## Remove compiled scripts
 	rm -rf build/
+
+# --- KarabinerConverter ---
+
+karabiner-export: $(SETUP_STAMP) ## Convert KE rules xlsx → json
+	@mkdir -p $(KE_BUILD)
+	$(ACTIVATE) && python $(KE_SCRIPT) xlsx2json $(KE_DATA)/rules.xlsx $(KE_BUILD)/rules.json
+
+karabiner-import: $(SETUP_STAMP) ## Import KE rules json → xlsx (from complex_modifications)
+	$(ACTIVATE) && python $(KE_SCRIPT) json2xlsx $(KE_DEPLOY)/rules.json $(KE_DATA)/rules.xlsx
+
+karabiner-deploy: karabiner-export ## Export + deploy rules to Karabiner Elements
+	@if [ -f "$(KE_DEPLOY)/rules.json" ]; then \
+		mkdir -p bak; \
+		cp "$(KE_DEPLOY)/rules.json" "bak/rules_$$(date +%Y%m%d_%H%M%S).json"; \
+		echo "--- Backed up existing rules to bak/ ---"; \
+	fi
+	@mkdir -p "$(KE_DEPLOY)"
+	cp $(KE_BUILD)/rules.json "$(KE_DEPLOY)/rules.json"
+	@echo "--- Deployed to $(KE_DEPLOY)/rules.json ---"
+	@echo "--- Now remove and re-enable the ruleset in Karabiner Elements ---"
 
 # --- Utility Targets ---
 

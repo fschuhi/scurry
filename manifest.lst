@@ -26,17 +26,27 @@ macros/MailExporter/export_mail.applescript
 ### --- Python ---
 macros/MailExporter/suffix_helper.py
 
-### --- Tools ---
+### --- DevOps Tools ---
 # tools/concat_files.py
 
 ### --- Testing AppleScript ---
 # N/A
 
 ### --- Testing Python tools ---
+# Excel workbook with rules and matching golden
+# tests/fixtures/KarabinerConverter/rules.xlsx
+tests/fixtures/KarabinerConverter/rules.json
+
 tests/fixtures/MailExporter/contacts.csv
 tests/fixtures/MailExporter/own_addresses.txt
+
+tests/KarabinerConverter/test_karabiner_converter.py
 tests/MailExporter/test_suffix_helper.py
 
 ### --- Data ---
 data/MailExporter/contacts.example.csv
 data/MailExporter/own_addresses.example.txt
+
+#### --- Output from running macros and scripts ---
+# build/KarabinerConverter
+# build/MailExporter/export_mail.scpt
