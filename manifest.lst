@@ -25,6 +25,7 @@ macros/MailExporter/export_mail.applescript
 
 ### --- Python ---
 macros/MailExporter/suffix_helper.py
+scripts/KarabinerConverter/karabiner_converter.py
 
 ### --- DevOps Tools ---
 # tools/concat_files.py
@@ -44,6 +45,7 @@ tests/KarabinerConverter/test_karabiner_converter.py
 tests/MailExporter/test_suffix_helper.py
 
 ### --- Data ---
+data/KarabinerConverter/rules.example.xlsx
 data/MailExporter/contacts.example.csv
 data/MailExporter/own_addresses.example.txt
 

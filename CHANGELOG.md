@@ -4,6 +4,34 @@ All notable changes to the Scurry project will be documented in this file.
 
 ---
 
+## [0.4.0] — 2026-05-18
+
+### KarabinerConverter: Integration into Scurry — COMPLETE
+
+Bidirectional converter between Karabiner Elements JSON and Excel, merged into Scurry as the second tool in the ecosystem.
+
+**Implemented:**
+- Integrated `karabiner_converter.py` into `scripts/KarabinerConverter/` — converts between Karabiner Elements JSON config and xlsx spreadsheet
+- Supports all Karabiner rule types: key remaps, pointing_button, shell_command, per-app conditions (`frontmost_application_if`/`unless`), multiple from-modifiers, multiple to-values (key sequences), and multiple bundle identifiers
+- Three Makefile targets: `karabiner-export` (xlsx → JSON), `karabiner-import` (JSON → xlsx from `complex_modifications`), `karabiner-deploy` (export + timestamped backup + copy to Karabiner + reminder)
+- `bak/` directory for timestamped backups of deployed rules (gitignored)
+- Example spreadsheet (`data/KarabinerConverter/rules.example.xlsx`) with 94 representative rules tracked in git
+- Production `rules.xlsx` gitignored via `data/**/rules.xlsx` pattern
+
+**Test suite:**
+- 29 new pytest tests in `tests/KarabinerConverter/test_karabiner_converter.py`
+- Purpose-built 10-row fixture (`tests/fixtures/KarabinerConverter/rules.xlsx`) exercising every code path: simple remap, conditions, modifiers, pointing_button, shell_command, multi-value output, multi-bundle conditions, edge cases
+- Golden file (`tests/fixtures/KarabinerConverter/rules.json`) for regression testing
+- Test groups: `_normalize_list_cell` helper (7), xlsx→JSON per-row verification (12), JSON→xlsx verification (5), roundtrip integrity (2), edge cases (3)
+- Full roundtrip verified: xlsx → JSON → xlsx → JSON produces identical output
+
+**Project updates:**
+- README.md expanded with KarabinerConverter architecture, data flow diagram, schema docs, and usage
+- Makefile reorganized with `KE_*` variables for KarabinerConverter paths
+- `openpyxl` added to `requirements.txt`
+
+---
+
 ## [0.3.0] — 2026-05-18
 
 ### Milestone 2: Routing & Naming Polish — COMPLETE

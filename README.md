@@ -8,7 +8,7 @@
 
 ## Vision
 
-Scurry exists to replicate and enhance a legacy Windows/Outlook/VBA macro workflow within the macOS ecosystem. It serves as a workbench for lightweight, highly specific AppleScript automations, starting with a robust Apple Mail extraction tool.
+Scurry exists to replicate and enhance a legacy Windows/Outlook/VBA macro workflow within the macOS ecosystem. It serves as a workbench for lightweight, highly specific automations — AppleScript macros, Python converters, and the glue that connects them — starting with a robust Apple Mail extraction tool and a Karabiner Elements rule manager.
 
 **Core Philosophy:**
 
@@ -21,11 +21,13 @@ Scurry exists to replicate and enhance a legacy Windows/Outlook/VBA macro workfl
 
 ## Architecture
 
-Scurry relies on AppleScript (and occasionally JavaScript for Automation / JXA) to interact directly with macOS application GUIs. This bypasses the need for complex, brittle API authentication (like IMAP App Passwords) by leveraging the applications that are already authenticated on the system.
+Scurry combines two categories of tools:
 
-Python helper scripts handle logic that would be awkward in AppleScript — dictionary lookups, CSV parsing, string manipulation — and are called from AppleScript via `do shell script`.
+**Macros** (`macros/`) rely on AppleScript (and occasionally JavaScript for Automation / JXA) to interact directly with macOS application GUIs. This bypasses the need for complex, brittle API authentication (like IMAP App Passwords) by leveraging the applications that are already authenticated on the system. Python helper scripts handle logic that would be awkward in AppleScript — dictionary lookups, CSV parsing, string manipulation — and are called from AppleScript via `do shell script`.
 
-### Data Flow
+**Scripts** (`scripts/`) are standalone Python tools that solve specific workflow problems. They don't interact with macOS GUIs but operate on data files (spreadsheets, JSON configs) that feed into the broader automation ecosystem.
+
+### Data Flow: Mail Exporter
 
 ```mermaid
 graph TB
@@ -51,15 +53,215 @@ graph TB
     TC -->|Routed| PR
 ```
 
+### Data Flow: Karabiner Converter
+
+```mermaid
+graph LR
+    subgraph "Scurry"
+        XLSX[rules.xlsx<br/>in data/KarabinerConverter/]
+        CONV[karabiner_converter.py]
+        JSON[rules.json<br/>in build/KarabinerConverter/]
+    end
+
+    subgraph "macOS"
+        KE_DIR[~/.config/karabiner/assets/<br/>complex_modifications/]
+        KE[Karabiner Elements]
+    end
+
+    XLSX -->|make karabiner-export| CONV
+    CONV --> JSON
+    JSON -->|make karabiner-deploy| KE_DIR
+    KE_DIR -->|load rules| KE
+    KE_DIR -->|make karabiner-import| CONV
+    CONV -->|bootstrap xlsx| XLSX
+```
+
 ---
 
 ## The Mail Exporter
 
 The primary macro extracts selected emails from Apple Mail into a structured local directory within the staging folder.
 
-**Status:** Milestones 1–3 complete. Core extraction is fully functional and accessible via keyboard shortcut. Directionality suffixes are fully functional.
+**Status:** Milestones 1–3 complete. Core extraction is fully functional and accessible via keyboard shortcut (CapsLock+D). Directionality suffixes are fully functional.
 
-### 1. Folder Naming Convention
+For detailed documentation on folder naming conventions, email text format, attachments, configuration, and technical notes, see the [MailExporter section](#mail-exporter-details) below.
+
+---
+
+## The Karabiner Converter
+
+A bidirectional converter between Karabiner Elements JSON configuration and an Excel spreadsheet for easier rule management.
+
+**Status:** Integrated into Scurry. Export, import, and deploy workflows functional via Makefile targets.
+
+### Why It Exists
+
+Karabiner Elements stores keyboard rules in deeply nested JSON — powerful but tedious to edit by hand. The converter lets you manage 100+ rules in a spreadsheet (with columns for description, from-key, modifiers, conditions, etc.) and generate valid Karabiner JSON from it. This is especially valuable for the CapsLock-as-Hyper-key setup that drives Scurry's keyboard shortcuts and 90+ other key mappings.
+
+### Spreadsheet Schema
+
+| Column | Description |
+|--------|-------------|
+| `description` | Human-readable rule name |
+| `from_key` | The trigger key code (e.g., `caps_lock`, `c`, `f1`) |
+| `from_modifiers` | Comma-separated mandatory modifiers (e.g., `right_control,left_command`) |
+| `to_type` | Output type: `key`, `pointing_button`, or `shell_command` |
+| `to_value` | Output value(s) — comma-separated for multi-key sequences; full command string for `shell_command` |
+| `to_modifiers` | Comma-separated modifiers applied to each output (ignored for `shell_command`) |
+| `condition_type` | `frontmost_application_if` or `frontmost_application_unless` |
+| `condition_bundle_ids` | Comma-separated bundle ID regex patterns (e.g., `^com\.parallels\.desktop\.console$`) |
+
+### Makefile Targets
+
+```bash
+make karabiner-export   # Convert rules.xlsx → rules.json (in build/)
+make karabiner-import   # Import rules.json from complex_modifications → rules.xlsx
+make karabiner-deploy   # Export + backup existing + copy to Karabiner + reminder
+```
+
+**Deploy workflow:** `make karabiner-deploy` generates the JSON, backs up any existing `rules.json` in Karabiner's `complex_modifications` folder (timestamped copy in `bak/`), copies the new file, and prints a reminder to remove and re-enable the ruleset in Karabiner Elements.
+
+---
+
+## Project Structure
+
+```text
+scurry/
+├── macros/                              ← GUI automation scripts
+│   └── MailExporter/
+│       ├── export_mail.applescript       ← Core email extraction logic (plain text)
+│       └── suffix_helper.py             ← Python helper for directionality suffixes
+├── scripts/                             ← Standalone Python tools
+│   └── KarabinerConverter/
+│       └── karabiner_converter.py       ← JSON ↔ xlsx bidirectional converter
+├── data/                                ← Runtime configuration (gitignored production files)
+│   ├── KarabinerConverter/
+│   │   ├── rules.xlsx                   ← Karabiner rules spreadsheet (gitignored)
+│   │   └── rules.example.xlsx           ← Example with 94 representative rules (tracked)
+│   └── MailExporter/
+│       ├── contacts.csv                 ← Abbreviation dictionary (gitignored)
+│       ├── contacts.example.csv         ← Example with dummy data (tracked)
+│       ├── own_addresses.txt            ← Own email addresses (gitignored)
+│       └── own_addresses.example.txt    ← Example (tracked)
+├── build/                               ← Generated output (gitignored)
+│   ├── KarabinerConverter/
+│   │   └── rules.json                   ← Generated Karabiner JSON
+│   └── MailExporter/
+│       └── export_mail.scpt             ← Compiled AppleScript
+├── tests/                               ← Test suite (mirrored structure)
+│   ├── KarabinerConverter/
+│   │   └── test_karabiner_converter.py  ← 29 tests for converter logic and roundtrip
+│   ├── MailExporter/
+│   │   └── test_suffix_helper.py        ← 13 tests for suffix logic, file loading, CLI
+│   └── fixtures/
+│       ├── KarabinerConverter/
+│       │   ├── rules.xlsx               ← 10-row purpose-built test fixture
+│       │   └── rules.json               ← Golden file (expected converter output)
+│       └── MailExporter/
+│           ├── contacts.csv             ← Test fixture with known mappings
+│           └── own_addresses.txt        ← Test fixture with known addresses
+├── tools/
+│   └── concat_files.py                  ← Filesdump generator for LLM sessions
+├── bak/                                 ← Timestamped backups from deploy targets (gitignored)
+├── tmp/                                 ← Staging folder for exported emails (gitignored)
+├── CHANGELOG.md                         ← Release history
+├── CRITICAL_RULES.md                    ← Non-negotiable LLM collaboration rules
+├── LLM-instructions.md                  ← AI session context and conventions
+├── README.md                            ← You are here
+├── TODO.md                              ← Backlog and future directions
+├── first-prompt.md                      ← Entry point for new LLM sessions
+├── manifest.lst                         ← File list for filesdump generation
+├── Makefile                             ← Build and utility targets
+└── requirements.txt                     ← Python dependencies (openpyxl, black, pytest)
+```
+
+---
+
+## Testing
+
+Scurry uses pytest for automated testing. The test directory mirrors the project structure to keep tests close to the code they verify.
+
+### Running Tests
+
+```bash
+make test           # Quiet mode
+make test-verbose   # Verbose with stdout
+```
+
+### Test Coverage
+
+**`tests/KarabinerConverter/test_karabiner_converter.py`** (29 tests):
+* **`_normalize_list_cell` helper:** None, empty string, single value, comma-separated, whitespace handling, list input, empty-string filtering
+* **xlsx → JSON conversion:** all 10 fixture rows verified individually — simple remap, conditions (if/unless), from/to modifiers, multiple from-modifiers, pointing_button, shell_command, multi-value output, multi-bundle-identifier conditions
+* **JSON → xlsx conversion:** row count, headers, shell_command preservation, multi-value collapse, pointing_button roundtrip
+* **Roundtrip integrity:** xlsx → JSON → xlsx → JSON produces identical output; freshly converted output matches golden file
+* **Edge cases:** empty rows skipped, missing `from_key` warning, missing columns cause `sys.exit(1)`
+
+**`tests/MailExporter/test_suffix_helper.py`** (13 tests):
+* **Incoming email logic:** known sender, unknown sender, case insensitivity
+* **Outgoing email logic:** 1/2/3/4+ recipients, mixed known/unknown, all unknown, no recipients, deduplication, order preservation, case insensitivity
+* **File loading:** comment and blank line handling, case normalisation, CSV parsing
+* **CLI integration:** end-to-end smoke tests calling the script as a subprocess
+
+### Test Fixtures
+
+Test fixtures live in `tests/fixtures/<Component>/` and contain deterministic data (tracked in git). They serve as stable test inputs that won't change when the user updates their real configuration.
+
+The KarabinerConverter fixture is a purpose-built 10-row spreadsheet covering every code path in the converter, paired with a golden JSON file representing the expected output. See the test file's docstring for a row-by-row map of what each row exercises.
+
+---
+
+## Integration & Usage
+
+### Daily Use: Keyboard Shortcut (CapsLock+D)
+
+The primary way to use the Mail Exporter is via a Karabiner Elements keyboard shortcut:
+
+1. Select an email in Apple Mail
+2. Press **CapsLock+D** (D for "download")
+3. The export runs silently and shows a confirmation dialog with the folder name and attachment count
+
+**Prerequisites:**
+- The compiled `.scpt` must be current: run `make build` after any changes to the AppleScript source
+- Accessibility permission must have been granted on first run
+- `data/MailExporter/contacts.csv` and `own_addresses.txt` must exist (copy from the example files and populate with real data)
+
+**How it works:** A Karabiner Elements `shell_command` rule calls `osascript` on the compiled `.scpt`. The rule is scoped to Apple Mail only via `condition_bundle_ids` (`^com\.apple\.mail$`), so it won't fire in other apps. The rule lives in the Karabiner rules spreadsheet (`data/KarabinerConverter/rules.xlsx`), managed by the converter and deployed via `make karabiner-deploy`.
+
+### Karabiner Rules Management
+
+```bash
+# Edit rules in Excel, then deploy:
+make karabiner-deploy
+
+# Bootstrap xlsx from an existing Karabiner config:
+make karabiner-import
+```
+
+### Running from Script Editor (Development)
+
+Open `macros/MailExporter/export_mail.applescript` in Script Editor, select an email in Apple Mail, and press ▶️ Run. Use Enter/Return to dismiss the confirmation dialog (the OK button may not respond to mouse clicks — this is a known Script Editor quirk).
+
+### Running from Terminal
+
+Compile and run the script directly:
+
+```bash
+make build
+osascript build/MailExporter/export_mail.scpt
+```
+
+Or run the plain-text source directly (useful for debugging — errors print to stderr):
+
+```bash
+osascript macros/MailExporter/export_mail.applescript
+```
+
+---
+
+## Mail Exporter Details
+
+### Folder Naming Convention
 
 The script analyzes the selected email and formats the folder name as: `YYMMDD vHHMM Sanitized_Subject [Suffix]`.
 
@@ -75,7 +277,7 @@ The script analyzes the selected email and formats the folder name as: `YYMMDD v
 * Incoming: `260509 v1015 Project Alpha Update (FB)`
 * Unknown sender/recipients: `260509 v1015 Project Alpha Update`
 
-### 2. Email Text Format (`email.txt`)
+### Email Text Format (`email.txt`)
 
 The body of the email is saved strictly as plain text. The script prepends metadata headers and appends a list of any downloaded attachments.
 
@@ -96,11 +298,11 @@ Hi Foo! Let's go! (please see attachment)
 
 The file is written using a shell heredoc pattern (`<<'SCURRY_EOF'`) to prevent shell interpolation of email content.
 
-### 3. Attachments
+### Attachments
 
 Attachments are downloaded automatically and saved directly into the generated folder alongside the `email.txt` file. This includes inline/pasted images, which Apple Mail exposes as `mail attachments` with auto-generated names (e.g., `image001.png`).
 
-### 4. Configuration
+### Configuration
 
 **Project root** is defined at the top of the AppleScript, and the staging directory derives from it:
 
@@ -116,112 +318,6 @@ set stagingRoot to projectRoot & "tmp/"
 Both config files are gitignored (they contain real email addresses). The example files document the expected format.
 
 All email address matching is case-insensitive.
-
----
-
-## Project Structure
-
-```text
-scurry/
-├── macros/                              ← The automation scripts
-│   └── MailExporter/
-│       ├── export_mail.applescript       ← Core email extraction logic (plain text)
-│       └── suffix_helper.py             ← Python helper for directionality suffixes
-├── data/                                ← Runtime configuration (gitignored)
-│   └── MailExporter/
-│       ├── contacts.csv                 ← Abbreviation dictionary (gitignored)
-│       ├── contacts.example.csv         ← Example with dummy data (tracked)
-│       ├── own_addresses.txt            ← Own email addresses (gitignored)
-│       └── own_addresses.example.txt    ← Example (tracked)
-├── build/                               ← Compiled .scpt files (generated by `make build`, gitignored)
-│   └── MailExporter/
-│       └── export_mail.scpt
-├── tests/                               ← Test suite (mirrored structure)
-│   ├── MailExporter/
-│   │   └── test_suffix_helper.py        ← 13 tests for suffix logic, file loading, CLI
-│   └── fixtures/
-│       └── MailExporter/
-│           ├── contacts.csv             ← Test fixture with known mappings
-│           └── own_addresses.txt        ← Test fixture with known addresses
-├── tools/
-│   └── concat_files.py                  ← Filesdump generator for LLM sessions
-├── tmp/                                 ← Staging folder for exported emails (gitignored)
-├── CHANGELOG.md                         ← Release history
-├── CRITICAL_RULES.md                    ← Non-negotiable LLM collaboration rules
-├── LLM-instructions.md                  ← AI session context and conventions
-├── README.md                            ← You are here
-├── TODO.md                              ← Backlog and future directions
-├── first-prompt.md                      ← Entry point for new LLM sessions
-├── manifest.lst                         ← File list for filesdump generation
-├── Makefile                             ← Build and utility targets
-└── requirements.txt                     ← Python dependencies (black, pytest)
-```
-
----
-
-## Testing
-
-Scurry uses pytest for automated testing. The test directory mirrors the `macros/` structure to keep tests close to the code they verify.
-
-### Running Tests
-
-```bash
-make test
-```
-
-This runs the full test suite via `pytest -v`.
-
-### Test Coverage
-
-**`tests/MailExporter/test_suffix_helper.py`** (13 tests):
-* **Incoming email logic:** known sender, unknown sender, case insensitivity
-* **Outgoing email logic:** 1/2/3/4+ recipients, mixed known/unknown, all unknown, no recipients, deduplication, order preservation, case insensitivity
-* **File loading:** comment and blank line handling, case normalisation, CSV parsing
-* **CLI integration:** end-to-end smoke tests calling the script as a subprocess
-
-### Test Fixtures
-
-Test fixtures live in `tests/fixtures/MailExporter/` and contain deterministic dummy data (tracked in git). They are copies of the example config files but serve as stable test inputs that won't change when the user updates their real configuration.
-
----
-
-## Integration & Usage
-
-### Daily Use: Keyboard Shortcut (CapsLock+D)
-
-The primary way to use the Mail Exporter is via a Karabiner Elements keyboard shortcut:
-
-1. Select an email in Apple Mail
-2. Press **CapsLock+D** (D for "download")
-3. The export runs silently and shows a confirmation dialog with the folder name and attachment count
-
-**Prerequisites:**
-- The compiled `.scpt` must be current: run `make build` after any changes to the AppleScript source
-- Accessibility permission must have been granted on first run
-- `data/MailExporter/contacts.csv` and `own_addresses.txt` must exist (copy from the example files and populate with real data)
-
-**How it works:** A Karabiner Elements `shell_command` rule calls `osascript` on the compiled `.scpt`. The rule is scoped to Apple Mail only via `condition_bundle_ids` (`^com\.apple\.mail$`), so it won't fire in other apps. The rule lives in the Karabiner rules spreadsheet (`rules.xlsx`), managed by the `converter.py` tool — it is not part of the scurry repo.
-
-**Note on Karabiner Elements:** Scurry uses the same Karabiner CapsLock-as-Hyper-key layer that drives 90+ other key mappings (cursor navigation, bracket shortcuts, clip-tools, etc.). This is a proven, reliable mechanism for per-app keyboard shortcuts on macOS. If you've forgotten about this setup, check `rules.xlsx` and `converter.py` in the Karabiner project.
-
-### Running from Script Editor (Development)
-
-Open `macros/MailExporter/export_mail.applescript` in Script Editor, select an email in Apple Mail, and press ▶️ Run. Use Enter/Return to dismiss the confirmation dialog (the OK button may not respond to mouse clicks — this is a known Script Editor quirk).
-
-### Running from Terminal
-
-Compile and run the script directly:
-
-```bash
-make build
-osascript build/MailExporter/export_mail.scpt
-```
-
-Or run the plain-text source directly (useful for debugging — errors print to stderr):
-
-```bash
-osascript macros/MailExporter/export_mail.applescript
-```
 
 ---
 
