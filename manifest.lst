@@ -23,6 +23,9 @@ requirements.txt
 ### --- AppleScript ---
 macros/MailExporter/export_mail.applescript
 
+### --- Python ---
+macros/MailExporter/suffix_helper.py
+
 ### --- Tools ---
 # tools/concat_files.py
 
