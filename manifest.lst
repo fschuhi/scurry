@@ -8,11 +8,11 @@ CRITICAL_RULES.md
 
 LLM-instructions.md
 manifest.lst
-tmp/project-tree.txt
+tmp/project_tree.txt
 
 README.md
 TODO.md
-# CHANGELOG.md
+# HISTORY.md
 
 ### --- Build & Configuration ---
 Makefile

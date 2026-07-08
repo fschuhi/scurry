@@ -29,7 +29,7 @@ bak/
 tmp/
 *.tmp
 filesdump.txt
-project-tree.txt
+project_tree.txt
 
 # private configuration files
 data/**/contacts.csv

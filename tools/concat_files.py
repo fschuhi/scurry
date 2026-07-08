@@ -2,29 +2,43 @@
 from pathlib import Path
 import sys
 
+# XML Template for each file
+FILE_TEMPLATE = """<document path="{path}">
+{content}
+</document>
+"""
 
-def read_text_with_fallback(filepath: Path) -> str:
-    """Read a text file, trying UTF-8 first, then Mac Roman.
+# XML Template for error markers (unreadable or missing files)
+ERROR_TEMPLATE = """<error path="{path}">{reason}</error>
+"""
 
-    AppleScript files saved by Script Editor typically use Mac Roman
-    encoding (ISO-8859 family) rather than UTF-8.  Characters like
-    the « » chevrons in four-character codes (e.g. «class isot»)
-    and em dashes are not valid UTF-8.
+# Header and trailer: declared expectations so the consuming model can detect
+# a truncated or clipped dump. The header survives truncation (truncation eats
+# the tail), so even a clipped dump states what it should have contained.
+HEADER_TEMPLATE = """<!-- FILESDUMP HEADER: {count} document(s), ~{tokens:,} tokens.
+     This dump ends with an 'END OF FILESDUMP' trailer stating the same
+     document count. If the trailer is missing or the counts differ, the dump
+     was truncated: stop and report instead of working from partial context. -->
+"""
 
-    Returns the file content as a string.
-    Raises OSError if the file cannot be read at all.
-    """
-    raw = filepath.read_bytes()
+TRAILER_TEMPLATE = """<!-- END OF FILESDUMP: {count} document(s) included. -->
+"""
 
-    try:
-        return raw.decode("utf-8")
-    except UnicodeDecodeError:
-        pass
+# Literal boundary strings that must never occur inside file content: a file
+# containing one of these would prematurely open or close a wrapper tag and
+# silently corrupt the dump. The build fails hard on any collision.
+# (Note: this script contains these strings itself, so it can never be
+# included in a dump -- attach it to the prompt separately when needed.)
+BOUNDARY_MARKERS = (
+    "<documents>",
+    "</documents>",
+    "<document path=",
+    "</document>",
+    "<error path=",
+)
 
-    # Mac Roman is the native encoding for Script Editor files
-    # and correctly handles «, », em dashes, and other Mac-specific
-    # characters that Latin-1 would map to wrong code points.
-    return raw.decode("mac_roman")
+# Rough heuristic: ~4 characters per token for typical code/prose mixes
+CHARS_PER_TOKEN = 4
 
 
 def concat(list_file: Path, out):
@@ -39,9 +53,14 @@ def concat(list_file: Path, out):
         out.write(f"Error: Cannot read file '{list_file}': {e}\n")
         return 1
 
-    # Write the opening root tag
-    out.write("<documents>\n")
+    included = 0
+    errors = []      # (path, reason) tuples
+    collisions = []  # (path, marker) tuples
+    total_chars = 0
+    entries = []     # ("file", path, content) or ("error", path, reason)
 
+    # Phase 1: read everything into memory. Buffering is required because the
+    # header declares counts that are only known after all files are read.
     for raw in lines:
         name = raw.strip()
 
@@ -52,23 +71,60 @@ def concat(list_file: Path, out):
         p = Path(name)
         if p.exists() and p.is_file():
             try:
-                content = read_text_with_fallback(p)
-                # Build the document block via concatenation instead of
-                # str.format() — file content may contain curly braces
-                # (e.g. AppleScript's `set myList to {}`) which .format()
-                # interprets as placeholder tokens.
-                out.write(f'\n<document path="{name}">\n')
-                out.write(content)
-                out.write("\n</document>\n")
+                content = p.read_text(encoding="utf-8")
+                for marker in BOUNDARY_MARKERS:
+                    if marker in content:
+                        collisions.append((name, marker))
+                entries.append(("file", name, content))
+                included += 1
+                total_chars += len(content)
             except (OSError, UnicodeDecodeError) as e:
-                sys.stderr.write(f"Error: Cannot read file '{name}': {e}\n")
-                out.write(f"\n")
+                reason = f"Cannot read file: {e}"
+                entries.append(("error", name, reason))
+                errors.append((name, reason))
         else:
-            sys.stderr.write(f"Error: Cannot find file '{name}'\n")
-            out.write(f"\n")
+            reason = "File not found"
+            entries.append(("error", name, reason))
+            errors.append((name, reason))
 
-    # Write the closing root tag
+    # Fail hard on boundary collisions: a poisoned dump is worse than no dump.
+    # Nothing is written to stdout, so a shell redirection yields an empty file.
+    if collisions:
+        sys.stderr.write("concat_files: FAILED -- boundary marker collision(s):\n")
+        for path, marker in collisions:
+            sys.stderr.write(f"  {path}: contains literal '{marker}'\n")
+        sys.stderr.write(
+            "No dump written. Comment the offending file(s) out in the "
+            "manifest; attach them to the prompt separately if needed.\n"
+        )
+        return 1
+
+    est_tokens = total_chars // CHARS_PER_TOKEN
+
+    # Phase 2: write the dump.
+    # Optional: Escape XML special characters if necessary,
+    # though LLMs are usually robust enough with raw code in these tags.
+    # For strict correctness, one might wrap content in CDATA,
+    # but simple tag wrapping is the current standard for prompts.
+    out.write("<documents>\n")
+    out.write(HEADER_TEMPLATE.format(count=included, tokens=est_tokens))
+    for kind, name, payload in entries:
+        if kind == "file":
+            out.write(FILE_TEMPLATE.format(path=name, content=payload))
+        else:
+            out.write(ERROR_TEMPLATE.format(path=name, reason=payload))
+    out.write(TRAILER_TEMPLATE.format(count=included))
     out.write("</documents>\n")
+
+    # Summary to stderr (keeps stdout clean for redirection)
+    sys.stderr.write(
+        f"concat_files: {included} file(s) included, "
+        f"{len(errors)} error(s), "
+        f"~{est_tokens:,} tokens ({total_chars:,} chars)\n"
+    )
+    for path, reason in errors:
+        sys.stderr.write(f"  ERROR {path}: {reason}\n")
+
     return 0
 
 

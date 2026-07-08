@@ -20,20 +20,21 @@ The following rules are detailed in CRITICAL_RULES.md (attached separately to th
 
 ---
 
-## ⚠️ OUTPUT FORMATTING RULES (Anti-Breakage)
+## Handling of Fenced Content
 
-**CRITICAL: Markdown Generation**
-The chat UI might break down if you nest triple backticks inside code blocks, or inside
-markdown blocks opened with triple backticks followed by `markdown` or the like.
+**RULE TRIGGER:** This protocol applies whenever the file content you are about to output contains one or more triple-backtick sequences anywhere within it, regardless of file type. This is common for `.md` files (which might contain fenced code examples) but can also occur in `.py`, `.json`, or any other file with embedded fenced content (e.g., a docstring or string literal containing a Markdown example).
 
-1. **Outer Wrapper**: Use standard triple backticks to wrap the file you are generating.
-2. **Inner Content**: If the file content contains code blocks (e.g., Markdown, JS, AppleScript examples),
-   you **MUST** use **triple single quotes** (`'''`) instead of backticks.
+**Step 1 -- Determine your output mode:**
+- If you are able to generate a file as a separate artifact/canvas/document object outside the main chat dialog (distinct from the conversational text area), do so normally. Nothing further in this section applies to you.
+- If you have no such artifact mechanism, and can only return file content as text within the chat dialog itself, proceed to Step 2.
 
-- ❌ BAD: Nested backticks inside the file content.
-- ✅ GOOD: Use triple single quotes inside the file content.
+**Step 2 -- Four-backtick wrapping (chat-only models):**
+- Do not change any of the internal three-backtick fences.
+- Wrap the entire file output in four backticks with an appropriate tag, e.g. for markdown like this:
 
-In case you are handling artefacts alongside (and not _in_) the conversation stream, this rule will most likely not apply.
+````markdown
+<file content here, which may itself freely contain standard triple-backtick fences>
+````
 
 ---
 

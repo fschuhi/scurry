@@ -164,7 +164,7 @@ scurry/
 │   └── concat_files.py                  ← Filesdump generator for LLM sessions
 ├── bak/                                 ← Timestamped backups from deploy targets (gitignored)
 ├── tmp/                                 ← Staging folder for exported emails (gitignored)
-├── CHANGELOG.md                         ← Release history
+├── HISTORY.md                         ← Release history
 ├── CRITICAL_RULES.md                    ← Non-negotiable LLM collaboration rules
 ├── LLM-instructions.md                  ← AI session context and conventions
 ├── README.md                            ← You are here
