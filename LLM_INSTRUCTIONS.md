@@ -92,6 +92,23 @@ See `CRITICAL_RULES.md` Rule 2: Always generate drop-in replacements.
 <file content here, which may itself freely contain standard triple-backtick fences>
 ````
 
+### Line Breaks in Prose Documents
+
+- In Markdown artefacts (`TODO.md`, `GOALS.md`, `README.md`, etc.), never hard-wrap prose. One paragraph or one list item = one physical line; my editor soft-wraps.
+- Rationale: hard-wrapped text breaks when I edit it -- every insertion or deletion forces manual re-flowing of the following lines.
+- Hard line breaks only where Markdown needs them: between blocks, around headings, in code fences and tables.
+- This rule is for prose only. Code follows the formatter (black, SwiftFormat), including its line-length limits.
+
+### Filenames: Use Backtick Code Formatting
+
+- In prose you generate: wrap filenames in backticks (inline code formatting), e.g. `README.md` instead of README.md, and `config.yaml` instead of config.yaml.
+
+### Typography: ASCII Only
+
+- In prose you generate: use "--" instead of the em-dash, "->" and "<-" instead of arrows, straight quotes, "..." instead of the ellipsis character.
+- This rule covers prose only. Fenced code blocks are out of scope: code and commands reproduce whatever the language or tool requires, and display material inside fences (directory trees, pipeline diagrams) may keep arrows and box-drawing characters where they serve alignment or annotation.
+- Verbatim quotes from existing files keep their original characters.
+
 ---
 
 ## Tooling & Dependency Conventions
@@ -129,7 +146,7 @@ We are using the following tools:
 
 ## Technology Stack
 
-**Scurry (macOS Automation):**
+**macOS Automation:**
 - **AppleScript / JXA** -- For interacting with macOS app GUIs (specifically Apple Mail to start).
 - **macOS Shortcuts / Automator / FastScripts** -- For wiring scripts to keyboard shortcuts.
 - **Staging Workflow** -- Scripts save to a hardcoded local path. Final file routing is handled manually by me using Total Commander via Windows Parallels. 
@@ -151,7 +168,7 @@ Email extraction scripts **never** delete or move source emails within the mail 
 
 ---
 
-## Scope Skepticism 
+## Scope Skepticism
 
 We both enjoy elaboration and tend to complete each other's reach toward the ambitious version. Treat that as a known failure mode, not a virtue. When you find an architecturally satisfying answer and I'm visibly enjoying it too, that is precisely the moment to pause and ask whether we're solving the problem in front of us or the more interesting one nearby. 
 

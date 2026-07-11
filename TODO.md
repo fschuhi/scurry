@@ -1,17 +1,15 @@
-# Scurry TODOs
+# TODO
 
-## Status Key
-- `[ ]` To do
-- `[~]` Partially done / workaround exists
-- `[!]` Known issue, needs investigation
-- `[x]` Completed
+(Note: "I" in the following paragraphs refer to the user, "you" to you as the AI model.)
+
+**Charter:** Forward-looking only -- concrete, startable work: tasks specified well enough that next-session-me can begin within ten minutes, plus investigation items, test specs, and scratchpad ideas awaiting promotion or deletion. Items are unordered within their theme sections; open questions are marked _Needs investigation_ in the bullet. Completed items are struck through (~~like this~~) until they move to `HISTORY.md` (on the heap, out of the per-session dump) at session end. Strategic direction, ordering, and milestones live in `GOALS.md` -- anything that needs a strategy discussion before it is actionable goes there. Architecture, contract, and settled decisions live in `README.md`.
 
 ---
 
 ## Backlog
 
 ### Karabiner Elements Integration
-- [x] Merge the Karabiner Elements json↔xlsx converter project into Scurry as the 2nd tool in the ecosystem. Converter lives in `scripts/KarabinerConverter/`, with Makefile targets for export, import, and deploy. 29 tests. (Completed 2026-05-18)
+- ~~Merge the Karabiner Elements json↔xlsx converter project into Scurry as the 2nd tool in the ecosystem. Converter lives in `scripts/KarabinerConverter/`, with Makefile targets for export, import, and deploy. 29 tests. (Completed 2026-05-18)~~
 
 ### KarabinerConverter Enhancements
 - [ ] Add `--description` flag to `xlsx2json` for setting the rule group description in the JSON output (currently hardcoded as "Karabiner Rules"). This is separate from `--title` which sets the top-level title.
