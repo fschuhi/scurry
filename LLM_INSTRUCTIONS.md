@@ -32,14 +32,11 @@ See `CRITICAL_RULES.md`:
 
 ## ✅ Workflow for the Whole Session (CRITICAL)
 
-1. **Check `GOALS.md`** and `TODO.md` -- Always look here for the current milestone (particularly the _Current Session Pointer_ in `GOALS.md`). Do not skip ahead.
-2. advance the project, step-by-step (see previous paragraph)
-3. **Update docs** -- at the end of the session: 
-   - update _Current Session Pointer_ in `GOALS.md`
-   - update project-specific documentation like handover or decision documents  
-   - add tasks to `TODO.md`
-   - move tasks from `GOALS.md` and `TODO.md` to `HISTORY.md`
-   - touch up `README.md` if necessary
+1. **Start from the current handover.** Check `GOALS.md` and `TODO.md` -- especially the _Current Session Pointer_ in `GOALS.md` and any struck-through items in `TODO.md`. The struck-through items summarize what the previous session completed and may establish contracts or decisions relevant to the work now beginning. Do not skip ahead without an explicit decision.
+2. **Advance the project step by step.** Follow the Discuss -> Approve -> Implement workflow from `CRITICAL_RULES.md`. Keep work proportionate, explain local ownership before modifying an existing subsystem, and do not treat parked work as implicitly abandoned.
+3. **Record completed work while it is fresh.** During the current session, add a dated entry to `HISTORY.md` for each completed item that merits a durable record. Strike through the corresponding `TODO.md` item and add a concise outcome or handover note. Update `README.md` when the session establishes or changes a durable architecture, technical, or behavioral contract.
+4. **Expire the previous handover.** At the end of the session, remove struck-through `TODO.md` items that were already present when the session began, provided their durable record is already in `HISTORY.md`. Leave items completed during the current session struck through in `TODO.md` so they appear in the next session's standard filesdump.
+5. **Update project position.** Update the _Current Session Pointer_ in `GOALS.md` to state where the project now is and what comes next. Touch up other project documentation when necessary.
 
 ---
 
@@ -116,7 +113,7 @@ See `CRITICAL_RULES.md` Rule 2: Always generate drop-in replacements.
 ### Dependency Policy
 
 - Do not reinvent the wheel.
-- I prefer using established, well-maintained tools over writing complex custom logic (e.g., use built-in scripting additions like `System Events`, or shell out via `do shell script` rather than hand-rolling logic AppleScript handles poorly.)
+- I prefer using established, well-maintained tools over writing complex custom logic( e.g., use built-in scripting additions like `System Events`, or shell out via `do shell script` rather than hand-rolling logic AppleScript handles poorly.)
 - If a shell command or standard macOS utility already solves this, suggest `do shell script` over a native AppleScript implementation.
 
 ### Frameworks
@@ -170,14 +167,14 @@ Email extraction scripts **never** delete or move source emails within the mail 
 
 ## Scope Skepticism
 
-We both enjoy elaboration and tend to complete each other's reach toward the ambitious version. Treat that as a known failure mode, not a virtue. When you find an architecturally satisfying answer and I'm visibly enjoying it too, that is precisely the moment to pause and ask whether we're solving the problem in front of us or the more interesting one nearby. 
+We both enjoy elaboration and tend to complete each other's reach toward the ambitious version. Treat that as a known failure mode, not a virtue. When you find an architecturally satisfying answer and I'm visibly enjoying it too, that is precisely the moment to pause and ask whether we're solving the problem in front of us or the more interesting one nearby.
 
 Before designing how, challenge whether this is the right-sized thing to build now. Ask: what is the cheapest artefact that delivers visible value, and is the proposed work that artefact or a later step in the arc? If it's a later step, say so explicitly and offer the value-first path as a real fork -- even (and especially), when the elaborate version is more interesting. A structural layer whose real population is one is a smell. When a deadline or a stated low appetite for the destination exists, weight the cheap path harder. Name the trade-off; let me choose.
 
 Let's keep this principle in mind:
 - Surface the cheapest thing that delivers visible value.
 - Name it explicitly as step one of the larger arc.
-- Make the choice to skip it conscious rather than default. 
+- Make the choice to skip it conscious rather than default.
 
 ---
 
@@ -252,6 +249,14 @@ When I express confusion, frustration, or uncertainty:
 - Validate the technical concern ("This is genuinely confusing because...")
 - Never tell me to "calm down," "take a breath," or similar phrases which I could (mis-)interpret as condescending or patronizing
 - Address the technical issue, not my state of mind
+
+---
+
+### Local Ownership Before Modification
+
+- Before proposing or making a change to an existing subsystem, explain its local ownership in terms of the user action we are changing: which type or file owns the action, which collaborators it calls, what state or contract it relies on, and what is intentionally outside the change's scope.
+- Scale the explanation to the change: a small localized edit may need only a short orientation; a change crossing UI, persistence, or coordination boundaries needs a concise end-to-end action path.
+- Do not treat currently working code as a black box merely because it is not the immediate target. The goal is that I can locate the relevant seam, understand why it is safe to change, and know which surrounding systems we are deliberately leaving alone.
 
 ---
 
