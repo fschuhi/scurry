@@ -16,7 +16,7 @@ KE_BUILD     = build/KarabinerConverter
 KE_DEPLOY    = $(HOME)/.config/karabiner/assets/complex_modifications
 
 # --- Phony targets ---
-.PHONY: all setup build run clean format showtree gentree filesdump help test test-verbose
+.PHONY: all setup build run clean format showtree gentree filesdump filesdump-detailed help test test-verbose
 .PHONY: karabiner-export karabiner-import karabiner-deploy
 
 # Default target
@@ -99,6 +99,11 @@ gentree: ## Save tree structure to tmp/project_tree.txt
 filesdump: gentree ## Create context dump for LLMs
 	@echo "--- Generating filesdump ---"
 	$(ACTIVATE) && python tools/concat_files.py manifest.lst > tmp/filesdump.txt
+	@echo "Filesdump created at tmp/filesdump.txt"
+
+filesdump-detailed: gentree ## Create context dump for LLMs
+	@echo "--- Generating filesdump ---"
+	$(ACTIVATE) && python tools/concat_files.py --detailed --sort manifest.lst > tmp/filesdump.txt
 	@echo "Filesdump created at tmp/filesdump.txt"
 
 help: ## Show this help message
